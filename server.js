@@ -1,38 +1,43 @@
 const express = require('express');
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const bodyParser = require('body-parser');
-const path = require('path');
 
 const app = express();
+const port = process.env.PORT || 3000;
+
+// Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 // MySQL connection
-const conn = mysql.createConnection({
-    host: "bgjo6wpqzweglg5jn2m0-mysql.services.clever-cloud.com",
-    user: "uxkdlftngtwx5f5s",
-    password: "63qSLEZl49b84Ig7EnyK",
-    database: "bgjo6wpqzweglg5jn2m0"
+const connection = mysql.createConnection({
+  host: 'bgjo6wpqzweglg5jn2m0-mysql.services.clever-cloud.com',
+  user: 'uxkdlftngtwx5f5s',
+  password: '63qSLEZl49b84Ig7EnyK',
+  database: 'bgjo6wpqzweglg5jn2m0'
 });
 
-conn.connect((err) => {
-    if (err) {
-        console.error('Connection error:', err);
-    } else {
-        console.log('Connection successful!');
-    }
+connection.connect((err) => {
+  if (err) {
+    console.error('Error connecting to database:', err);
+  } else {
+    console.log('Connected to database');
+  }
 });
 
-// Serve the HTML form
 app.get('/', (req, res) => {
-    res.send(`
+  res.send(`
     <!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Professional Form with Enhanced Notification and Cookie Consent</title>
+        <!-- Bootstrap CSS -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <!-- Font Awesome for Icons -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <!-- Custom CSS for Professional Design and Animations -->
         <style>
             body {
                 background-color: #f5f5f5;
@@ -43,6 +48,7 @@ app.get('/', (req, res) => {
                 margin: 0;
                 font-family: 'Arial', sans-serif;
             }
+
             .form-container {
                 background-color: #ffffff;
                 padding: 40px;
@@ -54,6 +60,7 @@ app.get('/', (req, res) => {
                 position: relative;
                 overflow: hidden;
             }
+
             .form-container h3 {
                 font-weight: 600;
                 margin-bottom: 30px;
@@ -61,11 +68,13 @@ app.get('/', (req, res) => {
                 text-align: center;
                 animation: fadeIn 1s ease-in-out;
             }
+
             .form-group label {
                 font-weight: 500;
                 color: #555;
                 animation: fadeInUp 0.6s ease-in-out;
             }
+
             .form-group input {
                 border: 1px solid #ddd;
                 border-radius: 6px;
@@ -73,10 +82,12 @@ app.get('/', (req, res) => {
                 font-size: 16px;
                 animation: fadeInUp 0.8s ease-in-out;
             }
+
             .form-group input:focus {
                 border-color: #007bff;
                 box-shadow: none;
             }
+
             .btn-primary {
                 background-color: #007bff;
                 border: none;
@@ -86,10 +97,12 @@ app.get('/', (req, res) => {
                 transition: background-color 0.3s ease, transform 0.3s ease;
                 animation: fadeInUp 1s ease-in-out;
             }
+
             .btn-primary:hover {
                 background-color: #0056b3;
                 transform: scale(1.05);
             }
+
             .loader {
                 position: absolute;
                 top: 50%;
@@ -103,6 +116,7 @@ app.get('/', (req, res) => {
                 transform: translate(-50%, -50%);
                 display: none;
             }
+
             .alert {
                 position: fixed;
                 top: 20px;
@@ -117,22 +131,27 @@ app.get('/', (req, res) => {
                 display: flex;
                 align-items: center;
             }
+
             .alert.show {
                 opacity: 1;
                 visibility: visible;
             }
+
             .alert-success {
                 background-color: #28a745;
                 color: #fff;
             }
+
             .alert-error {
                 background-color: #dc3545;
                 color: #fff;
             }
+
             .alert i {
                 margin-right: 10px;
                 font-size: 1.2em;
             }
+
             .cookie-consent {
                 position: fixed;
                 bottom: 20px;
@@ -144,9 +163,11 @@ app.get('/', (req, res) => {
                 z-index: 9999;
                 display: none;
             }
+
             .cookie-consent p {
                 margin-bottom: 10px;
             }
+
             .cookie-consent button {
                 background-color: #007bff;
                 color: white;
@@ -156,21 +177,26 @@ app.get('/', (req, res) => {
                 cursor: pointer;
                 transition: background-color 0.3s ease;
             }
+
             .cookie-consent button:hover {
                 background-color: #0056b3;
             }
+
             @keyframes slideIn {
                 from { transform: translateY(50px); opacity: 0; }
                 to { transform: translateY(0); opacity: 1; }
             }
+
             @keyframes fadeIn {
                 from { opacity: 0; }
                 to { opacity: 1; }
             }
+
             @keyframes fadeInUp {
                 from { opacity: 0; transform: translateY(20px); }
                 to { opacity: 1; transform: translateY(0); }
             }
+
             @keyframes spin {
                 0% { transform: rotate(0deg); }
                 100% { transform: rotate(360deg); }
@@ -179,13 +205,9 @@ app.get('/', (req, res) => {
     </head>
     <body>
         <!-- Notification Alerts -->
-        <div class="alert alert-success" id="notification" style="display:none;">
-            <i class="fas fa-check-circle"></i>
-            Data Added Successfully!
-        </div>
-        <div class="alert alert-error" id="notification-error" style="display:none;">
-            <i class="fas fa-exclamation-triangle"></i>
-            Data Not Added!
+        <div class="alert" id="notification">
+            <i id="notificationIcon"></i>
+            <span id="notificationMessage"></span>
         </div>
 
         <!-- Cookie Consent Popup -->
@@ -197,7 +219,7 @@ app.get('/', (req, res) => {
         <div class="form-container">
             <div class="loader" id="loader"></div>
             <h3>Your Information</h3>
-            <form id="infoForm" action="/submit" method="POST">
+            <form id="infoForm">
                 <div class="form-group">
                     <label for="name">Your Name</label>
                     <input type="text" name="name" class="form-control" id="name" placeholder="Enter your name" required>
@@ -224,14 +246,40 @@ app.get('/', (req, res) => {
 
         <script>
             $(document).ready(function() {
-                // Show notification if present
-                const notification = $('#notification');
-                const notificationError = $('#notification-error');
-
-                // Form submission loader
+                // Form submission
                 $('#infoForm').on('submit', function(e) {
+                    e.preventDefault();
                     $('#loader').show();
+
+                    $.ajax({
+                        url: '/submit',
+                        method: 'POST',
+                        data: $(this).serialize(),
+                        success: function(response) {
+                            showNotification(response.type, response.message);
+                            $('#loader').hide();
+                            if (response.type === 'success') {
+                                $('#infoForm')[0].reset();
+                            }
+                        },
+                        error: function() {
+                            showNotification('error', 'An error occurred. Please try again.');
+                            $('#loader').hide();
+                        }
+                    });
                 });
+
+                // Show notification
+                function showNotification(type, message) {
+                    const notification = $('#notification');
+                    notification.removeClass('alert-success alert-error').addClass('alert-' + type);
+                    $('#notificationIcon').removeClass().addClass(type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle');
+                    $('#notificationMessage').text(message);
+                    notification.addClass('show');
+                    setTimeout(() => {
+                        notification.removeClass('show');
+                    }, 4000);
+                }
 
                 // Cookie consent handling
                 if (!getCookie('cookieConsent')) {
@@ -245,64 +293,47 @@ app.get('/', (req, res) => {
 
                 // Function to set a cookie
                 function setCookie(name, value, days) {
-                    const d = new Date();
-                    d.setTime(d.getTime() + (days*24*60*60*1000));
-                    const expires = "expires="+ d.toUTCString();
-                    document.cookie = name + "=" + value + ";" + expires + ";path=/";
+                    var expires = "";
+                    if (days) {
+                        var date = new Date();
+                        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                        expires = "; expires=" + date.toUTCString();
+                    }
+                    document.cookie = name + "=" + (value || "") + expires + "; path=/";
                 }
 
                 // Function to get a cookie
                 function getCookie(name) {
-                    const cname = name + "=";
-                    const decodedCookie = decodeURIComponent(document.cookie);
-                    const ca = decodedCookie.split(';');
-                    for(let i = 0; i <ca.length; i++) {
-                        let c = ca[i];
-                        while (c.charAt(0) == ' ') {
-                            c = c.substring(1);
-                        }
-                        if (c.indexOf(cname) == 0) {
-                            return c.substring(cname.length, c.length);
-                        }
+                    var nameEQ = name + "=";
+                    var ca = document.cookie.split(';');
+                    for(var i=0;i < ca.length;i++) {
+                        var c = ca[i];
+                        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
                     }
-                    return "";
+                    return null;
                 }
             });
         </script>
     </body>
     </html>
-    `);
+  `);
 });
 
-// Handle form submission
 app.post('/submit', (req, res) => {
-    const { name, education, telephone, email } = req.body;
+  const { name, education, telephone, email } = req.body;
 
-    // SQL query to insert data into the tutors table
-    const sql = `INSERT INTO tutors (name, education, telephone, email) VALUES (?, ?, ?, ?)`;
-    conn.query(sql, [name, education, telephone, email], (err, result) => {
-        if (err) {
-            console.error('Error inserting data:', err);
-            res.send(`
-                <script>
-                    alert('Data Not Added! Please try again.');
-                    window.location.href = '/';
-                </script>
-            `);
-        } else {
-            console.log('Data added successfully:', result);
-            res.send(`
-                <script>
-                    alert('Data Added Successfully!');
-                    window.location.href = '/';
-                </script>
-            `);
-        }
-    });
+  const sql = 'INSERT INTO tutors (name, education, telephone, email) VALUES (?, ?, ?, ?)';
+  connection.query(sql, [name, education, telephone, email], (err, result) => {
+    if (err) {
+      console.error('Error inserting data:', err);
+      res.json({ type: 'error', message: 'Data Not Added!' });
+    } else {
+      res.json({ type: 'success', message: 'Data Added Successfully!' });
+    }
+  });
 });
 
-// Start the server
-const port = process.env.PORT || 3000;
 app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });
