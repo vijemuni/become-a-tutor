@@ -210,11 +210,7 @@ app.get('/', (req, res) => {
             <span id="notificationMessage"></span>
         </div>
 
-        <!-- Cookie Consent Popup -->
-        <div class="cookie-consent" id="cookieConsent">
-            <p>This website uses cookies to ensure you get the best experience on our website.</p>
-            <button id="acceptCookies">Accept</button>
-        </div>
+     
 
         <div class="form-container">
             <div class="loader" id="loader"></div>
