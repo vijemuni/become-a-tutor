@@ -339,9 +339,9 @@ app.post('/submit', (req, res) => {
   connection.query(sql, [name, education, telephone, email], (err, result) => {
     if (err) {
       console.error('Error inserting data:', err);
-      res.json({ type: 'error', message: 'Data Not Added!' });
+      res.json({ type: 'error', message: 'Please check your internet connection!' });
     } else {
-      res.json({ type: 'success', message: 'Data Added Successfully!' });
+      res.json({ type: 'success', message: 'Thank you for sharing the information with us and we will contact you within 72 hours!' });
     }
   });
 });
